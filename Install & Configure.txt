@@ -1,0 +1,33 @@
+Install & Configure (quick)
+Save the script:
+mkdir -p ~/bin && cp multi-ai-chat ~/bin/multi-ai-chat && chmod +x ~/bin/multi-ai-chat
+Or place at /usr/local/bin/multi-ai-chat (systemwide).
+Ensure prerequisites:
+brew install bash jq curl on macOS (or apt install bash jq curl on Debian/Ubuntu).
+Run with bash --version — script requires bash 4+ (brew install bash on macOS).
+Provide credentials (choose one of these safe options):
+Environment variables (temporary, in-session):
+export OPENAI_API_KEY="sk-...."
+export GROK_API_KEY="..."
+export COPILOT_API_KEY="..."
+export GEMINI_API_KEY="..."
+export META_API_KEY="..."
+Or create a config file (recommended for repeated use) ~/.multi-ai-chat.env:
+# ~/.multi-ai-chat.env
+export OPENAI_API_KEY="sk-..."
+export OPENAI_API_URL="https://api.openai.com/v1/chat/completions"
+export GROK_API_KEY="..."
+export GROK_API_URL="https://api.grok.example/v1/generate"
+# ...other providers...
+Then export MULTIAI_CONFIG_FILE=~/.multi-ai-chat.env before running OR add source ~/.multi-ai-chat.env to your shell rc.
+Run:
+./multi-ai-chat "What is the fastest route from A to B?"
+Or if installed in PATH: multi-ai-chat "Give me a summary of this text."
+Notes, caveats, and production advice
+Endpoints & OAuth: Some providers (Microsoft Copilot, Google Gemini) commonly require OAuth flows or enterprise tokens. This script uses a generic Bearer-token model. For those providers, either:
+Create a small local proxy service that performs the OAuth token exchange and exposes a simple Bearer-based endpoint the script can call, or Provide the valid service-account JWT or short-lived token in GEMINI_API_KEY/COPILOT_API_KEY if you have one.
+Rate limits & concurrency: If you hit rate limits, reduce concurrency or add delays. The script includes CONCURRENT_WAIT to slightly stagger requests; tune per provider.
+Security: never commit your API keys to repos. Use environment variables, OS keychain, or a secrets manager. The script masks long token-like strings in logs but treat logs as sensitive.
+Schema differences: Providers return different JSON shapes — the script tries several common fields (choices[0].message.content, output, result, text). You should adapt the parsing for exact provider responses to improve reliability.
+Extending: Add provider-specific response sanitization, streaming response handling, or HTML/markdown rendering as needed.
+Testing: Start by testing one provider (OpenAI) with OPENAI_API_KEY set. Confirm the response shape and adjust the send_openai() parser if you use a different model or endpoint.
